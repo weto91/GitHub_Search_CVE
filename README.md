@@ -8,10 +8,6 @@
 
 # GitHub_Search_CVE
 
-**Table of Contents**
-
-[TOCM]
-
 ##Requirements
 - Debian based operative system
 - Tested on Kali  2022-01-31 and Ubuntu 20.04
