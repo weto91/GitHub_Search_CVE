@@ -29,7 +29,7 @@ myIP=""                             # This array contains all available IP addre
 
 # Functions
 function helpView(){
-	echo -e "${yellow}[*]${endColour}${gray}How to use: exploitDownloader -e [CVE-XXX-XXXX] -l [Python] -m [SCP] -u [user] -t [10.10.10.25]${endColour}"
+	echo -e "${yellow}[*]${endColour}${gray}How to use:${endColour} ${purple}exploitDownloader -e [CVE-XXX-XXXX] -l [Python] -m [SCP] -u [user] -t [10.10.10.25]${endColour}"
 	echo -e "    ${purple}-e${endColour}${gray}: CVE to find. The format must be: CVE-YEAR-CODE (ex: CVE-2021-3156)${endColour}"
 	echo -e "    ${purple}-l${endColour}${gray}: Language to filter. Allowed langs:Python, Shell, C, C#, Java, JavaScript, PHP, Go, Ruby, PowerShell, Ruby...${endColour}"
 	echo -e "    ${purple}-m${endColour}${gray}: Mode. You can put 'Download' to download the CVEs in /tmp/CVEDownloaded, 'SCP' to download the CVEs and send to target machine (-t)${endColour}"
@@ -97,8 +97,8 @@ function runSCP(){
 		echo -e "${red}[X]${endColour} Error: You must enter -u [user] and -t [target] to run SCP mode"
 		exit 1
 	fi
-	echo -e "${gray}Oh yeah!, making SCP to $1@$2:/home/$1/ . Plase wait..${endColour}"
-	scp -r $3/$4.tar.gz $1@$2:/home/$1/
+	echo -e "${yellow}[i]${endColour}Making SCP to $exploitUser@$exploitTarget:/home/$exploitUser/ . Plase wait.."
+	scp -r $3/$4.tar.gz $1@$2:/home/$1/ &>/dev/null
 	if [ $? -eq "0" ]; then
 		echo -e "${yellow}[*]${endColour}SCP finished, the file/s are in ${green}/home/$1 ${endColour}in the target machine"
 		exit 0
