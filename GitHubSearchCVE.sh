@@ -35,26 +35,39 @@ function helpView(){
 	echo -e "    ${purple}-m${endColour}${gray}: Mode. You can put 'Download' to download the CVEs in /tmp/CVEDownloaded, 'SCP' to download the CVEs and send to target machine (-t)${endColour}"
 	echo -e "    ${purple}-u${endColour}${gray}: User. If you select SCP as mode, you must type this option to send by SCP the exploits.${endColour}"
 	echo -e "    ${purple}-t${endColour}${gray}: Target. If you select SCP as mode, you must type this option to send by SCP the exploits.${endColour}"
+	echo -e "    ${purple}-z${endColour}${gray}: Check dependencies, put '-z on' if you need check and install the dependencies of the script.${endColour}"
 	echo -e "    ${purple}-h${endColour}${gray}: Help. List of options.${endColour}"
 	exit 0
 }
 
 function depsCheck(){
-	clear; dependencies=(git curl jq netcat)
-	echo -e "${yellow}[*]${endColour}${gray}Checking for dependencies...${endColour}"
-	sleep 2s
-	for dep in "${dependencies[@]}"; do
-		echo -ne "${yellow}[*]${endColour}${purple}$dep${endColour}..."
+	if [[ -f /usr/bin/apt-get ]]; then	
+		clear; echo "[i] Running on debian based Linux"; dependencies=(git curl jq netcat)
+		echo -e "${yellow}[*]${endColour}${gray}Checking for dependencies...${endColour}"
 		sleep 1s
-		if [[ -f /usr/bin/$dep ]]; then
-			echo -e "${green}(V)${endColour}"
+		for dep in "${dependencies[@]}"; do
+			echo -ne "${yellow}[*]${endColour}${purple}$dep${endColour}..."
+			sleep 0.5s
+			if [[ -f /usr/bin/$dep ]]; then
+				echo -e "${green}(V)${endColour}"
+			else
+				echo -e "${red}(X)${endColour}\n"
+				echo -e "${yellow}[+]${endColour}Automatic installation of: ${purple}$dep${endColour}..."
+				apt-get install $program -y > /dev/null 2>&1
+			fi
+			sleep 1s
+		done
+	else
+		if [[ ! -f "/usr/bin/git" || ! -f "/usr/bin/curl" || ! -f "/usr/bin/jq" || ! -f "/usr/bin/nc" ]]; then
+			echo -e "${yellow}[i]${endColour} You are not running this script in Debian based linux."
+			echo -e "${yellow}[i]${endColour} Dependencies will not be checked. Make sure you have installed:"
+			echo -e "${yellow}	[*]${endColour}GIT \n	[*]CURL \n	[*]JQ \n	[*]NETCAT"
+			exit 1
 		else
-			echo -e "${red}(X)${endColour}\n"
-			echo -e "${yellow}[+]${endColour}Automatic installation of: ${purple}$dep${endColour}..."
-			apt-get install $program -y > /dev/null 2>&1
+			echo -e "${yellow}[i]${endColour} You are not running this script in Debian based Linux."
+			echo -e "${yellow}[i]${endColour} However, all dependencies are installed, so you can continue =)"
 		fi
-		sleep 1s
-	done
+	fi
 }
 
 function preparation(){
@@ -100,7 +113,7 @@ function runHTTP(){
         networkCard=($networkC)
         myIPAddress=$(ip r | grep metric | awk -F"src" '{print $2}' | awk -F"metric" '{print $1}' | tail -n +2)
         myIP=($myIPAddress)
-        
+        counterTwo="0"
         echo -e "${gray}To download $1 in the target machine:${endColour}" 
         for i in "${networkCard[@]}"; do
         	echo -e "     -From $i: in the target run: ${green}curl --output $2.tar.gz --http0.9 ${myIP[$counterTwo]}:$portToDeploy${endColour} or ${green}wget ${myIP[$counterTwo]}:$portToDeploy ${endColour}"
@@ -155,7 +168,7 @@ function endFunction(){
 }
 
 function ctrl_c(){
-	echo -ne "${yellow}[i]${endColour} Checking if there is any HTTP server launched..."
+	echo -ne "\n${yellow}[i]${endColour} Checking if there is any HTTP server launched..."
 	if [[ -z $pidToDelete ]]; then
 		sleep 3s
 		echo -e "${green}(V)${endColour}\n"
@@ -172,13 +185,14 @@ function ctrl_c(){
 # Start Function
 
 if [ "$(id -u)" == "0" ]; then
-	declare -i paramsC=0; while getopts ":e:l:m:u:t:h:" arg; do
+	declare -i paramsC=0; while getopts ":e:l:m:u:t:z:h:" arg; do
 		case $arg in
 			e) exploitCVE=$OPTARG; let paramsC+=1 ;;
 			l) exploitLang=$OPTARG; let paramsC+=1 ;;
 			m) exploitMode=$OPTARG; let paramsC+=1 ;;
 			u) exploitUser=$OPTARG ;;
 			t) exploitTarget=$OPTARG ;;
+			z) exploitNoDep=$OPTARG ;;
 			h) helpView;;
 		esac
 	done
@@ -186,14 +200,16 @@ if [ "$(id -u)" == "0" ]; then
 	if [ $paramsC -ne 3 ]; then
 		helpView
 	else
-		depsCheck      # Searching for dependencies and install it if not installed yet
-		preparation    # Check if the folders that the screep need are exists and delete old executions.
-		checkCVE       # Check if the given CVE is really a CVE code.
-		searchCVE      # Search the CVE in github database
-		mainFunction   # This is the main logic of this script. this function calls more functions:
-			          # runSCP : To run SCP if you have selected SCP mode
-			          # runHTTP: To run HTTP server if you have selected HTTP mode
-		endFunction       # This function is to cleanup the system
+		if [[ $exploitNoDep == "on" ]]; then
+			depsCheck      # Searching for dependencies and install it if not installed yet
+		fi
+		preparation            # Check if the folders that the screep need are exists and delete old executions.
+		checkCVE               # Check if the given CVE is really a CVE code.
+		searchCVE              # Search the CVE in github database
+		mainFunction           # This is the main logic of this script. this function calls more functions:
+			                # runSCP : To run SCP if you have selected SCP mode
+			                # runHTTP: To run HTTP server if you have selected HTTP mode
+		endFunction            # This function is to cleanup the system
 	fi
 else
 	echo -e "\n${red}[*]${endColour} You must execute this code as root\n"
